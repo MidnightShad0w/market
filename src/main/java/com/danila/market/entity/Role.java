@@ -1,5 +1,5 @@
 package com.danila.market.entity;
 
 public enum Role {
-    CLIENT, ADMIN
+    ROLE_USER, ROLE_ADMIN
 }

@@ -36,7 +36,7 @@ public class UserService implements UserDetailsService {
                 .username(userDTO.getUsername())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
                 .email(userDTO.getEmail())
-                .role(Role.CLIENT)
+                .role(Role.ROLE_USER)
                 .build();
         userRepository.save(user);
         return true;

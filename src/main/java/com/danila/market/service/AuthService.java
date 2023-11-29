@@ -13,7 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class AuthService {
     private final JWTUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
 
-    public ResponseEntity<?> createToken(@RequestBody JwtRequest authRequest) {
+    public ResponseEntity<?> createToken(JwtRequest authRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
         } catch (BadCredentialsException e) {
@@ -33,7 +32,7 @@ public class AuthService {
         return ResponseEntity.ok(new JwtResponse(token));
     }
 
-    public ResponseEntity<?> saveNewUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> saveNewUser(UserDTO userDTO) {
         if (!userDTO.getPassword().equals(userDTO.getMatchingPassword())) {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), "Passwords do not match"), HttpStatus.BAD_REQUEST);
         }
