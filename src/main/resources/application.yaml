@@ -1,0 +1,17 @@
+
+jwt:
+    secret: secret
+    lifetime: 30m
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show_sql: true
+    generate-ddl: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/market
+    username: postgres
+    password: admin
+  flyway:
+    baseline-on-migrate: true
+
