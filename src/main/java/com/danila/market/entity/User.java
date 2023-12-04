@@ -1,5 +1,6 @@
 package com.danila.market.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,7 @@ public class User {
     private String username;
     private String email;
     private String password;
+    @JsonBackReference
     @OneToOne(cascade = CascadeType.REMOVE)
     private Cart cart;
     @Enumerated(EnumType.STRING)

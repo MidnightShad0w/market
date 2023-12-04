@@ -1,10 +1,14 @@
 package com.danila.market.controller;
 
 import com.danila.market.entity.Product;
+import com.danila.market.exceptions.AppError;
 import com.danila.market.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,14 +18,23 @@ public class ProductController {
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllProducts() {
-        return productService.getAllProducts();
+        List<Product> productList = productService.getAllProducts();
+        if (productList.isEmpty()) {
+            return new ResponseEntity<>(new AppError(HttpStatus.NOT_FOUND.value(), "Products not found"), HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(productList);
     }
     @PostMapping("/save")
     public ResponseEntity<?> saveNewProduct(@RequestBody Product product) {
-        return productService.saveNewProduct(product);
+        var savedProduct = productService.saveNewProduct(product);
+        if (savedProduct == null) {
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), "Error saving product"), HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(savedProduct);
     }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProductById(@PathVariable int id) {
-        return productService.deleteProductById(id);
+        productService.deleteProductById(id);
+        return ResponseEntity.ok("Product with id " + id + " deleted");
     }
 }
