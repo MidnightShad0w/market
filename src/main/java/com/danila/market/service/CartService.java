@@ -59,19 +59,23 @@ public class CartService {
         return (double) totalPrice;
     }
     public void deleteProductFromCart(int userId, List<Integer> productIds) {
-        List<Product> newProductsList = productRepository.findAllById(productIds);
-        Cart cart = cartRepository.findCartByUserId(userId);
-        List<Product> currentProductsList = cart.getProduct();
-        currentProductsList.removeAll(newProductsList);
-        cart.setProduct(currentProductsList);
-        cartRepository.save(cart);
-    }
-    public void deleteCart(int userId) {
-        if (cartRepository.existsCartByUserId(userId)) {
-            cartRepository.deleteCartByUserId(userId);
-        } else {
-            throw new EntityNotFoundException("Cart with id " + userId + " not found");
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+        Cart cart = user.getCart();
+        for (Integer productId : productIds) {
+            Product productToRemove = cart.getProduct().stream().filter(product -> product.getId() == productId).findFirst().orElse(null);
+            if (productToRemove != null) {
+                cart.getProduct().remove(productToRemove);
+                break;
+            }
         }
-
+        if (cart.getProduct().isEmpty()) {
+            user.setCart(null);
+            userRepository.save(user);
+            cartRepository.delete(cart);
+        } else {
+            cartRepository.save(cart);
+            user.setCart(cart);
+            userRepository.save(user);
+        }
     }
 }

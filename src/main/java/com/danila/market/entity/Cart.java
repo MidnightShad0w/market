@@ -26,10 +26,12 @@ public class Cart {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @ManyToMany
-    @JoinTable(
-        name = "carts_products", joinColumns = @JoinColumn(name = "cart_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> product;
+//    @ManyToMany
+//    @JoinTable(
+//        name = "carts_products", joinColumns = @JoinColumn(name = "cart_id"),
+//            inverseJoinColumns = @JoinColumn(name = "product_id")
+//    )
+//    private List<Product> product;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<CartDetails> details;
 }

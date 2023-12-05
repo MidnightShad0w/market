@@ -3,6 +3,7 @@ package com.danila.market.service;
 import com.danila.market.dto.JwtRequest;
 import com.danila.market.dto.JwtResponse;
 import com.danila.market.dto.UserDTO;
+import com.danila.market.entity.User;
 import com.danila.market.exceptions.AppError;
 import com.danila.market.jwt.JWTUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ public class AuthService {
             return new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(), "Invalid username or password"), HttpStatus.UNAUTHORIZED);
         }
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
+        User user = userService.findByUsername(authRequest.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
         String token = jwtUtils.generateToken(userDetails);
-        return ResponseEntity.ok(new JwtResponse(token));
+        return ResponseEntity.ok(new JwtResponse(token, user.getId(), user.getUsername()));
     }
 
     public ResponseEntity<?> saveNewUser(UserDTO userDTO) {
