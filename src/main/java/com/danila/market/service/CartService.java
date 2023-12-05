@@ -22,7 +22,7 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public CartDTO addProductToCart(int userId, List<Integer> productIds) {
+/*    public CartDTO addProductToCart(int userId, List<Integer> productIds) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
         if (cart == null) {
@@ -77,5 +77,5 @@ public class CartService {
             user.setCart(cart);
             userRepository.save(user);
         }
-    }
+    }*/
 }

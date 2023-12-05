@@ -15,7 +15,7 @@ import java.util.List;
 public class CartController {
     private final CartService cartService;
 
-    @PostMapping("/add") //add?userId=?&productIds=?,?,...
+/*    @PostMapping("/add") //add?userId=?&productIds=?,?,...
     public ResponseEntity<?> addProductToCart(@RequestParam Integer userId, @RequestParam List<Integer> productIds) {
         var cart = cartService.addProductToCart(userId, productIds);
         if (cart == null) {
@@ -27,5 +27,5 @@ public class CartController {
     public ResponseEntity<?> deleteProductFromCart(@RequestParam Integer userId, @RequestParam List<Integer> productIds) {
         cartService.deleteProductFromCart(userId, productIds);
         return ResponseEntity.ok("Products " + productIds + " deleted from cart");
-    }
+    }*/
 }
