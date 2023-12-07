@@ -1,7 +1,8 @@
 package com.danila.market.service;
 
-import com.danila.market.dto.CartDTO;
+import com.danila.market.dto.*;
 import com.danila.market.entity.Cart;
+import com.danila.market.entity.CartDetails;
 import com.danila.market.entity.Product;
 import com.danila.market.entity.User;
 import com.danila.market.repository.CartRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,60 +24,76 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-/*    public CartDTO addProductToCart(int userId, List<Integer> productIds) {
+    public void addProductToCart(CartRequest cartRequest) {
+        var userId = cartRequest.getUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
-            cart.setProduct(new ArrayList<>());
+            cart.setDetails(new ArrayList<>());
         }
-        List<Product> productList = productRepository.findAllById(productIds);
-        cart.getProduct().addAll(productList);
-        Cart savedCart = cartRepository.save(cart);
-        user.setCart(savedCart);
-        userRepository.save(user);
-        return createCartDTO(savedCart);
-    }
-    private CartDTO createCartDTO(Cart cart) {
-        CartDTO cartDTO = new CartDTO();
-        var productAmount = new HashMap<Product, Double>();
-        for (Product product : cart.getProduct()) {
-            if (productAmount.containsKey(product)) {
-                productAmount.put(product, productAmount.get(product) + 1);
+        var productIds = cartRequest.getProducts().stream().map(productRequest -> productRequest.getProductId()).toList();
+        List<Product> products = productRepository.findAllById(productIds);
+        for (Product product : products) {
+            Optional<CartDetails> existingCartDetails = cart.getDetails().stream()
+                    .filter(cd -> cd.getProduct().getId() == product.getId())
+                    .findFirst();
+
+            if (existingCartDetails.isPresent()) {
+                CartDetails cartDetails = existingCartDetails.get();
+                int newAmount = cartRequest.getProducts().stream()
+                        .filter(pr -> pr.getProductId() == product.getId())
+                        .findFirst().get().getAmount();
+                cartDetails.setAmount(cartDetails.getAmount() + newAmount);
+                cartDetails.setPrice(product.getPrice() * cartDetails.getAmount());
             } else {
-                productAmount.put(product, 1.0);
+                CartDetails cartDetails = new CartDetails();
+                cartDetails.setProduct(product);
+                cartDetails.setCart(cart);
+                cartDetails.setAmount(cartRequest.getProducts().stream()
+                        .filter(pr -> pr.getProductId() == product.getId())
+                        .findFirst().get().getAmount());
+                cartDetails.setPrice(product.getPrice() * cartDetails.getAmount());
+                cart.getDetails().add(cartDetails);
             }
         }
-        cartDTO.setProductAmount(productAmount);
-        cartDTO.setTotalPrice(calculateTotalPrice(productAmount));
-        return cartDTO;
+        user.setCart(cart);
+        cartRepository.save(cart);
+        userRepository.save(user);
     }
-    private Double calculateTotalPrice(HashMap<Product, Double> productAmount) {
-        var totalPrice = 0;
-        for (var entry : productAmount.entrySet()) {
-            totalPrice += entry.getKey().getPrice() * entry.getValue();
+    public CartResponse getCart(int userId) {
+        CartResponse cartResponse = new CartResponse();
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+        Cart cart = user.getCart();
+        if (cart != null) {
+            cartResponse.setUserId(userId);
+            cartResponse.setProducts(cart.getDetails().stream()
+                    .map(cartDetails -> new ProductResponse(cartDetails.getProduct().getId(), cartDetails.getAmount(), cartDetails.getPrice()))
+                    .toList());
+            return cartResponse;
+        } else {
+            return null;
         }
-        return (double) totalPrice;
     }
     public void deleteProductFromCart(int userId, List<Integer> productIds) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
-        for (Integer productId : productIds) {
-            Product productToRemove = cart.getProduct().stream().filter(product -> product.getId() == productId).findFirst().orElse(null);
-            if (productToRemove != null) {
-                cart.getProduct().remove(productToRemove);
-                break;
-            }
-        }
-        if (cart.getProduct().isEmpty()) {
-            user.setCart(null);
-            userRepository.save(user);
-            cartRepository.delete(cart);
-        } else {
-            cartRepository.save(cart);
-            user.setCart(cart);
-            userRepository.save(user);
-        }
-    }*/
+//        for (Integer productId : productIds) {
+//            Product productToRemove = cart.getProduct().stream().filter(product -> product.getId() == productId).findFirst().orElse(null);
+//            if (productToRemove != null) {
+//                cart.getProduct().remove(productToRemove);
+//                break;
+//            }
+//        }
+//        if (cart.getProduct().isEmpty()) {
+//            user.setCart(null);
+//            userRepository.save(user);
+//            cartRepository.delete(cart);
+//        } else {
+//            cartRepository.save(cart);
+//            user.setCart(cart);
+//            userRepository.save(user);
+//        }
+    }
 }

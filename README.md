@@ -1,4 +1,4 @@
-# **<p align="center">LesDoc</p>**
+# **<p align="center">Market</p>**
 
 ## **About the project**
 
