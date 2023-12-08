@@ -28,10 +28,10 @@ public class CartController {
         }
         return ResponseEntity.ok(cart);
     }
-    @DeleteMapping("/delete") //delete?userId=?&productIds=?,?,...
-    public ResponseEntity<?> deleteProductFromCart(@RequestParam Integer userId, @RequestParam List<Integer> productIds) {
-        cartService.deleteProductFromCart(userId, productIds);
-        return ResponseEntity.ok("Products " + productIds + " deleted from cart");
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteProductFromCart(@RequestBody CartRequest cartRequest) {
+        cartService.deleteProductFromCart(cartRequest);
+        return ResponseEntity.ok("Products deleted from cart");
     }
 
 }

@@ -31,6 +31,6 @@ public class Cart {
 //            inverseJoinColumns = @JoinColumn(name = "product_id")
 //    )
 //    private List<Product> product;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cart")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cart", orphanRemoval = true)
     private List<CartDetails> details;
 }
