@@ -29,7 +29,7 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-    private BigDecimal sum;
+    private double sum;
     private String address;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
     private List<OrderDetails> details;

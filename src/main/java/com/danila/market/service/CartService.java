@@ -7,7 +7,6 @@ import com.danila.market.entity.Cart;
 import com.danila.market.entity.CartDetails;
 import com.danila.market.entity.Product;
 import com.danila.market.entity.User;
-import com.danila.market.repository.CartDetailsRepository;
 import com.danila.market.repository.CartRepository;
 import com.danila.market.repository.ProductRepository;
 import com.danila.market.repository.UserRepository;
@@ -25,7 +24,6 @@ public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final CartDetailsRepository cartDetailsRepository;
 
     public void addProductToCart(CartRequest cartRequest) {
         var userId = cartRequest.getUserId();
@@ -109,6 +107,15 @@ public class CartService {
             user.setCart(cart);
             userRepository.save(user);
             cartRepository.save(cart);
+        }
+    }
+    public void deleteCart(int userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+        Cart cart = user.getCart();
+        if (cart != null) {
+            user.setCart(null);
+            userRepository.save(user);
+            cartRepository.delete(cart);
         }
     }
 }

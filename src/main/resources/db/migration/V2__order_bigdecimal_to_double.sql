@@ -1,0 +1,1 @@
+alter table orders alter column sum type double precision using sum::double precision
