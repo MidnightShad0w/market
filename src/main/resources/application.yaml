@@ -14,4 +14,19 @@ spring:
     password: admin
   flyway:
     baseline-on-migrate: true
+  mail:
+    host: smtp.mail.ru
+    port: 465
+    username: ds.quicksave@mail.ru
+    password: vfUmguPhkskyYh9dbjpt
+    test-connection: true
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.mail.ru
 

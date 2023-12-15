@@ -3,9 +3,7 @@ package com.danila.market.service;
 import com.danila.market.dto.CartResponse;
 import com.danila.market.dto.OrderRequest;
 import com.danila.market.entity.*;
-import com.danila.market.repository.CartRepository;
 import com.danila.market.repository.OrderRepository;
-import com.danila.market.repository.ProductRepository;
 import com.danila.market.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.util.List;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final CartRepository cartRepository;
     private final CartService cartService;
 
     public void createOrder(OrderRequest orderRequest) {
