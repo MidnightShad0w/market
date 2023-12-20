@@ -1,6 +1,7 @@
 package com.danila.market.controller;
 
 import com.danila.market.dto.CartRequest;
+import com.danila.market.entity.Cart;
 import com.danila.market.exceptions.AppError;
 import com.danila.market.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class CartController {
     private final CartService cartService;
     @PostMapping("/add")
     public ResponseEntity<?> addProductToCart(@RequestBody CartRequest cartRequest) {
-        cartService.addProductToCart(cartRequest);
-        return ResponseEntity.ok("Products successfully added to cart");
+        var cart = cartService.addProductToCart(cartRequest);
+        return ResponseEntity.ok(cart);
     }
     @GetMapping("/get")
     public ResponseEntity<?> getCart(@RequestParam Integer userId) {

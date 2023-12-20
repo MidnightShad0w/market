@@ -1,11 +1,11 @@
 package com.danila.market.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.danila.market.Utils.HashMapConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -25,6 +25,7 @@ public class Cart {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cart", orphanRemoval = true)
-    private List<CartDetails> details;
+    private String detailsJSON;
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, Object> details;
 }

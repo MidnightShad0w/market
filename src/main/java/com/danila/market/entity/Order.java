@@ -1,17 +1,14 @@
 package com.danila.market.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -32,7 +29,7 @@ public class Order {
     private double sum;
     private String address;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
-    private List<OrderDetails> details;
+    private List<Details> details;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 }

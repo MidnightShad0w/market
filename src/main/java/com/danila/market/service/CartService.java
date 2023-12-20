@@ -2,9 +2,10 @@ package com.danila.market.service;
 
 import com.danila.market.dto.CartRequest;
 import com.danila.market.dto.CartResponse;
+import com.danila.market.dto.ProductRequest;
 import com.danila.market.dto.ProductResponse;
 import com.danila.market.entity.Cart;
-import com.danila.market.entity.CartDetails;
+import com.danila.market.entity.Details;
 import com.danila.market.entity.Product;
 import com.danila.market.entity.User;
 import com.danila.market.repository.CartRepository;
@@ -14,9 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,44 +24,39 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public void addProductToCart(CartRequest cartRequest) {
-        var userId = cartRequest.getUserId();
+    public Cart addProductToCart(CartRequest cartRequest) {
+        int userId = cartRequest.getUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
+
         if (cart == null) {
             cart = new Cart();
             cart.setUser(user);
-            cart.setDetails(new ArrayList<>());
+            cart.setDetails(new HashMap<>());
         }
-        var productIds = cartRequest.getProducts().stream().map(productRequest -> productRequest.getProductId()).toList();
-        List<Product> products = productRepository.findAllById(productIds);
-        for (Product product : products) {
-            Optional<CartDetails> existingCartDetails = cart.getDetails().stream()
-                    .filter(cd -> cd.getProduct().getId() == product.getId())
-                    .findFirst();
-            if (existingCartDetails.isPresent()) {
-                CartDetails cartDetails = existingCartDetails.get();
-                int additionalAmount = cartRequest.getProducts().stream()
-                        .filter(pr -> pr.getProductId() == product.getId())
-                        .findFirst().get().getAmount();
-                cartDetails.setAmount(cartDetails.getAmount() + additionalAmount);
-                cartDetails.setPrice(product.getPrice() * cartDetails.getAmount());
+
+        Map<String, Object> details = cart.getDetails();
+
+        for (ProductRequest productRequest : cartRequest.getProducts()) {
+            int productId = productRequest.getProductId();
+            int amount = productRequest.getAmount();
+            Product product = productRepository.findById(productId).orElseThrow(() -> new EntityNotFoundException("Product with id " + productId + " not found"));
+            double price = product.getPrice();
+            if (details.containsKey(String.valueOf(productId))) {
+                ProductResponse existingProductResponse = (ProductResponse) details.get(String.valueOf(productId));
+                int existingAmount = existingProductResponse.getAmount();
+                int newAmount = existingAmount + amount;
+                existingProductResponse.setAmount(newAmount);
+                existingProductResponse.setTotalPrice(newAmount*price);
             } else {
-                CartDetails cartDetails = new CartDetails();
-                cartDetails.setProduct(product);
-                cartDetails.setCart(cart);
-                cartDetails.setAmount(cartRequest.getProducts().stream()
-                        .filter(pr -> pr.getProductId() == product.getId())
-                        .findFirst().get().getAmount());
-                cartDetails.setPrice(product.getPrice() * cartDetails.getAmount());
-                cart.getDetails().add(cartDetails);
+                details.put(String.valueOf(productId), new ProductResponse(productId, amount, price*amount));
             }
         }
-        user.setCart(cart);
+        cart.setDetails(details);
         cartRepository.save(cart);
-        userRepository.save(user);
+        return cart;
     }
-    public CartResponse getCart(int userId) {
+    public Cart getCart(int userId) {
         CartResponse cartResponse = new CartResponse();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
@@ -83,19 +77,19 @@ public class CartService {
         var productIds = cartRequest.getProducts().stream().map(productRequest -> productRequest.getProductId()).toList();
         List<Product> products = productRepository.findAllById(productIds);
         for (Product product : products) {
-            Optional<CartDetails> existingCartDetails = cart.getDetails().stream()
+            Optional<Details> existingDetails = cart.getDetails().stream()
                     .filter(cd -> cd.getProduct().getId() == product.getId())
                     .findFirst();
-            if (existingCartDetails.isPresent()) {
-                CartDetails cartDetails = existingCartDetails.get();
+            if (existingDetails.isPresent()) {
+                Details details = existingDetails.get();
                 int additionalAmount = cartRequest.getProducts().stream()
                         .filter(pr -> pr.getProductId() == product.getId())
                         .findFirst().get().getAmount();
-                cartDetails.setAmount(cartDetails.getAmount() - additionalAmount);
-                if (cartDetails.getAmount() <= 0) {
-                    cart.getDetails().remove(cartDetails);
+                details.setAmount(details.getAmount() - additionalAmount);
+                if (details.getAmount() <= 0) {
+                    cart.getDetails().remove(details);
                 } else {
-                    cartDetails.setPrice(product.getPrice() * cartDetails.getAmount());
+                    details.setPrice(product.getPrice() * details.getAmount());
                 }
             }
         }
