@@ -1,11 +1,12 @@
 package com.danila.market.entity;
 
+import com.danila.market.Utils.HashMapConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -28,8 +29,8 @@ public class Order {
     private User user;
     private double sum;
     private String address;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
-    private List<Details> details;
+    @Convert(converter = HashMapConverter.class)
+    private Map<String, Object> details;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 }

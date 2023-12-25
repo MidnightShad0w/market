@@ -31,8 +31,8 @@ public class CartController {
     }
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteProductFromCart(@RequestBody CartRequest cartRequest) {
-        cartService.deleteProductFromCart(cartRequest);
-        return ResponseEntity.ok("Products deleted from cart");
+        Cart cart = cartService.deleteProductFromCart(cartRequest);
+        return ResponseEntity.ok(cart);
     }
 
 }
