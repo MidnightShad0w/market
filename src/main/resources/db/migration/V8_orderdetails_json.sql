@@ -1,0 +1,1 @@
+alter table if exists orders add column details varchar(255);

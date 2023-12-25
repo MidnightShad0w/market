@@ -1,15 +1,19 @@
 package com.danila.market.service;
 
-import com.danila.market.dto.CartResponse;
 import com.danila.market.dto.OrderRequest;
-import com.danila.market.entity.*;
+import com.danila.market.dto.ProductResponse;
+import com.danila.market.entity.Cart;
+import com.danila.market.entity.Order;
+import com.danila.market.entity.OrderStatus;
+import com.danila.market.entity.User;
 import com.danila.market.repository.OrderRepository;
 import com.danila.market.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -17,43 +21,31 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CartService cartService;
+    private final ObjectMapper objectMapper;
 
-//    public void createOrder(OrderRequest orderRequest) {
-//        var userId = orderRequest.getUserId();
-//        var cartResponse = cartService.getCart(userId);
-//        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-//        Cart cart = user.getCart();
-//        List<Details> detailsList = cart.getDetails();
-//
-////        List<OrderDetails> orderDetailsList = new ArrayList<>();
-////        for (var cartDetails : cart.getDetails()) {
-////            orderDetailsList.add(OrderDetails.builder()
-////                    .product(cartDetails.getProduct())
-////                    .amount(cartDetails.getAmount())
-////                    .price(cartDetails.getPrice())
-////                    .build()
-////            );
-////        }
-//        Order order = Order.builder()
-//                .user(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found")))
-//                .address(orderRequest.getAddress())
-//                .sum(calculateSum(cartResponse))
-//                .status(OrderStatus.NEW)
-////                .details(detailsList)
-//                .build();
-//
-//        for (var details : detailsList) {
-//            details.setOrder(order);
-//            details.setCart(null);
-//        }
-//        cartService.deleteCart(userId); //todo: repair cart_id=null, order_id=1,2,3...
-//        order.setDetails(detailsList);
-//        orderRepository.save(order);
-//    }
-    private double calculateSum(CartResponse cartResponse) {
+    public Order createOrder(OrderRequest orderRequest) {
+        var userId = orderRequest.getUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+        Cart cart = user.getCart();
+        Map<String, Object> details = cart.getDetails();
+
+        Order order = Order.builder()
+                .user(userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found")))
+                .address(orderRequest.getAddress())
+                .sum(calculateSum(details))
+                .status(OrderStatus.NEW)
+                .details(details)
+                .build();
+
+        cartService.deleteCart(userId);
+        orderRepository.save(order);
+        return order;
+    }
+    private double calculateSum(Map<String, Object> details) {
         double sum = 0;
-        for (var product : cartResponse.getProducts()) {
-            sum += product.getTotalPrice();
+        for (Map.Entry<String, Object> entry : details.entrySet()) {
+            ProductResponse productResponse = objectMapper.convertValue(entry.getValue(), ProductResponse.class);
+            sum += productResponse.getTotalPrice();
         }
         return sum;
     }

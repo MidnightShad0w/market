@@ -1,6 +1,7 @@
 package com.danila.market.controller;
 
 import com.danila.market.dto.OrderRequest;
+import com.danila.market.entity.Order;
 import com.danila.market.service.EmailService;
 import com.danila.market.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,8 @@ public class OrderController {
 
     @RequestMapping("/create")
     public void createOrder(@RequestBody OrderRequest orderRequest) {
-        orderService.createOrder(orderRequest);
+        Order order = orderService.createOrder(orderRequest);
+        emailService.send("samsonchik2406@mail.ru", "new order", order.toString());
     }
 
     @RequestMapping("/sendmail")
