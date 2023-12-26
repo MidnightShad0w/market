@@ -28,7 +28,7 @@ public class CartService {
     public Cart addProductToCart(CartRequest cartRequest) {
         int userId = cartRequest.getUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
-        Cart cart = user.getCart();
+        Cart cart = getCart(userId);
 
         if (cart == null) {
             cart = new Cart();
@@ -46,8 +46,7 @@ public class CartService {
             double price = product.getPrice();
             if (details.containsKey(String.valueOf(productId))) {
                 ProductResponse existingProductResponse = objectMapper.convertValue(details.get(String.valueOf(productId)), ProductResponse.class);
-                int existingAmount = existingProductResponse.getAmount();
-                int newAmount = existingAmount + amount;
+                int newAmount = existingProductResponse.getAmount() + amount;
                 existingProductResponse.setAmount(newAmount);
                 existingProductResponse.setTotalPrice(newAmount*price);
                 details.put(String.valueOf(productId), existingProductResponse);
@@ -63,7 +62,18 @@ public class CartService {
     public Cart getCart(int userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
         Cart cart = user.getCart();
+
         if (cart != null) {
+            Map<String, Object> details = cart.getDetails();
+            for (Map.Entry<String, Object> entry : details.entrySet()) {
+                Product product = productRepository.findById(Integer.parseInt(entry.getKey())).orElseThrow(() -> new EntityNotFoundException("Product with id " + entry.getKey() + " not found"));
+                double price = product.getPrice();
+                ProductResponse productResponse = objectMapper.convertValue(entry.getValue(), ProductResponse.class);
+                productResponse.setTotalPrice(productResponse.getAmount()*price);
+                entry.setValue(productResponse);
+            }
+            cart.setDetails(details);
+            cartRepository.save(cart);
             return cart;
         } else {
             return null;
